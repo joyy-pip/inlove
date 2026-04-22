@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Archive 04.04</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --spotify-green: #1DB954;
+            --accent-red: #ff4d4d;
+            --bg-dark: #050505;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        /* LOADING SCREEN */
+        #loading-screen {
+            position: fixed; inset: 0;
+            background: var(--bg-dark);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease;
+        }
+
+        .system-card {
+            width: 90%; max-width: 340px;
+            background: #121212;
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 25px 50px rgba(0,0,0,1);
+        }
+
+        .video-container {
+            width: 100%;
+            height: 190px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .video-container video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 10px;
+            color: #555;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.5s;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
+        }
+
+        .percentage {
+            font-size: 10px; color: white; font-weight: 700;
+            min-width: 35px; text-align: right;
+        }
+
+        .progress-bar-bg {
+            width: 100%; height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px; overflow: hidden;
+        }
+
+        #progress-bar-fill {
+            width: 0%; height: 100%;
+            background: var(--accent-red);
+            /* Transition dihapus agar requestAnimationFrame yang handle kehalusannya */
+        }
+
+        /* SPOTIFY BAR */
+        .spotify-mini {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 380px;
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); padding: 12px 16px;
+            border-radius: 15px; display: flex; align-items: center; gap: 12px;
+            z-index: 1000; opacity: 0; transition: 0.8s;
+            pointer-events: none;
+        }
+
+        .spotify-mini.show { opacity: 1; pointer-events: auto; }
+
+        .spot-logo { width: 26px; height: 26px; color: var(--spotify-green); }
+        .spot-info { flex: 1; overflow: hidden; }
+        .spot-info h4 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .spot-info p { font-size: 11px; color: #b3b3b3; }
+
+        .spot-play-btn {
+            width: 36px; height: 36px; background: white;
+            border-radius: 50%; border: none; color: black; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; cursor: pointer;
+        }
+
+        /* SCENES */
+        #app { width: 100%; height: 100%; }
+        .scene {
+            position: absolute; inset: 0; display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.8s ease;
+        }
+        .scene.active { opacity: 1; visibility: visible; }
+
+        .collage-container {
+            position: relative; width: 100%; height: 70vh; margin-top: 60px;
+        }
+
+        .item { position: absolute; opacity: 0; transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; }
+        .polaroid { background: #fff; padding: 10px 10px 22px 10px; width: 135px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .polaroid img { width: 100%; height: 120px; object-fit: cover; }
+        .polaroid .note { font-family: 'Special Elite', cursive; color: #111; text-align: center; margin-top: 8px; font-size: 8px; line-height: 1.2; }
+
+        .photobooth { background: #111; padding: 6px; width: 95px; display: flex; flex-direction: column; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .photobooth img { width: 100%; height: 85px; object-fit: cover; }
+
+        .focused { top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(2.2) rotate(0deg) !important; z-index: 5000 !important; }
+        .dimmer { position: fixed; inset: 0; background: rgba(0,0,0,0.9); opacity: 0; visibility: hidden; transition: 0.4s; z-index: 4000; }
+        .dimmer.active { opacity: 1; visibility: visible; }
+
+        .hint-swipe { position: fixed; bottom: 20px; width: 100%; text-align: center; font-size: 8px; color: #333; letter-spacing: 2px; }
+
+        .final-card {
+            background: white; color: black; padding: 30px; border-radius: 2px; width: 85%; max-width: 320px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="system-card">
+            <div class="video-container">
+                <video id="intro-video" muted playsinline autoplay loop>
+                    <source src="https://d.top4top.io/m_3763gmep90.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="status-container">
+                <div class="status-text" id="status-label">
+                    <div class="status-dot"></div>
+                    SYSTEM LOADING
+                </div>
+                <div class="percentage" id="load-pct">0%</div>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progress-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dimmer" class="dimmer"></div>
+
+    <div class="spotify-mini" id="spotify-bar">
+        <svg class="spot-logo" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.49 17.303c-.22.367-.704.484-1.063.264-2.885-1.765-6.516-2.164-10.793-1.183-.418.096-.836-.168-.933-.586-.096-.418.168-.836.586-.933 4.675-1.068 8.68-.616 11.882 1.343.36.22.476.705.258 1.064l.063.031zm1.467-3.253c-.28.455-.877.599-1.332.32-3.324-2.043-8.389-2.633-12.316-1.443-.512.155-1.05-.138-1.205-.65-.156-.51.137-1.05.65-1.205 4.492-1.365 10.076-.704 13.882 1.637.452.278.597.876.32 1.34zm.127-3.39c-3.987-2.368-10.563-2.587-14.363-1.432-.612.186-1.258-.168-1.444-.78-.186-.612.168-1.258.78-1.444 4.364-1.325 11.61-1.071 16.208 1.657.55.327.734 1.036.407 1.588-.327.551-1.036.734-1.588.412z"/>
+        </svg>
+        <div class="spot-info">
+            <h4>Masa Ini, Nanti, Dan Masa Lainnya</h4>
+            <p>Nuca</p>
+        </div>
+        <button class="spot-play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <div id="progress-container" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1);">
+            <div id="progress" style="width: 0%; height: 100%; background: var(--spotify-green);"></div>
+        </div>
+    </div>
+
+    <div id="app">
+        <div class="scene active">
+            <div style="text-align: center;">
+                <h1 style="font-family: 'Playfair Display'; font-size: 3.5rem;">2026<br>04.04</h1>
+                <p style="opacity: 0.4; font-size: 11px; margin-top: 15px; letter-spacing: 3px;">TAP TO EXPLORE</p>
+            </div>
+        </div>
+        <div class="scene">
+            <div class="collage-container" id="collage"></div>
+        </div>
+        <div class="scene">
+            <div class="final-card">
+                <h2 style="font-family: 'Playfair Display'; font-size: 1.5rem; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px;">Endless Love.</h2>
+                <p style="font-size: 12px; line-height: 1.6;">Terima kasih sudah menjadi bagian terindah di tahun ini.</p>
+                <p style="margin-top: 20px; font-weight: bold; color: var(--spotify-green);">— 04.04.2026</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint-swipe">BY BJORKNISM</div>
+
+    <audio id="main-audio" loop>
+        <source src="https://h.top4top.io/m_37630vfez0.mp3" type="audio/mp4">
+    </audio>
+
+    <script>
+        const audio = document.getElementById('main-audio');
+        const video = document.getElementById('intro-video');
+        const progFill = document.getElementById('progress-bar-fill');
+        const pctText = document.getElementById('load-pct');
+        const statusLabel = document.getElementById('status-label');
+        const loadScreen = document.getElementById('loading-screen');
+        const spotifyBar = document.getElementById('spotify-bar');
+
+        // SINKRONISASI LOADING DENGAN DURASI VIDEO
+        video.onloadedmetadata = () => {
+            const videoDuration = video.duration * 1000; // milidetik
+            let startTime = null;
+
+            function animateLoading(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min((elapsed / videoDuration) * 100, 100);
+
+                progFill.style.width = progress + '%';
+                pctText.innerText = Math.floor(progress) + '%';
+
+                if (progress < 100) {
+                    requestAnimationFrame(animateLoading);
+                } else {
+                    statusLabel.innerHTML = '<div class="status-dot" style="background:var(--spotify-green)"></div> READY TO OPEN';
+                    statusLabel.style.color = "var(--spotify-green)";
+                    loadScreen.style.cursor = "pointer";
+                    loadScreen.onclick = startExperience;
+                }
+            }
+            requestAnimationFrame(animateLoading);
+        };
+
+        function startExperience() {
+            loadScreen.style.opacity = '0';
+            spotifyBar.classList.add('show');
+            setTimeout(() => { 
+                loadScreen.style.display = 'none'; 
+                togglePlay(); 
+            }, 1000);
+        }
+
+        function togglePlay() {
+            const btn = document.getElementById('playBtn');
+            if(audio.paused) { audio.play(); btn.innerHTML = '❚❚'; }
+            else { audio.pause(); btn.innerHTML = '▶'; }
+        }
+
+        audio.ontimeupdate = () => {
+            document.getElementById('progress').style.width = (audio.currentTime / audio.duration) * 100 + '%';
+        };
+
+        // GALLERY DATA
+        const gallery = [
+    { src: "https://g.top4top.io/p_3763qy4au1.jpg", note: "The first spark that started it all. ✨", type: "polaroid" },
+    { src: "https://f.top4top.io/p_3763dspap0.jpg", note: "Stuck in this moment, and I don't mind. ⏳", type: "photobooth" },
+    { src: "https://i.top4top.io/p_3763ahrpq5.jpg", note: "Definisi 'rumah' yang nggak berbentuk bangunan. 🏠", type: "polaroid" },
+    { src: "https://h.top4top.io/p_3763nu0ee4.jpg", note: "In a room full of art, I'd still stare at you. 🖼️", type: "photobooth" },
+    { src: "https://g.top4top.io/p_3763i4zuu3.jpg", note: "Dunia boleh berisik, asal di sini tetap tenang. 🎧", type: "polaroid" },
+    { src: "https://f.top4top.io/p_376382o5u2.jpg", note: "Finding pieces of peace in your smile. 🌙", type: "photobooth" },
+    { src: "https://e.top4top.io/p_3763wfl7n1.jpg", note: "Random, chaotic, but purely magic. 🪄", type: "polaroid" },
+    { src: "https://d.top4top.io/p_3763ikqm50.jpg", note: "Satu dari jutaan alasan aku bersyukur. ❤️", type: "photobooth" },
+    { src: "https://f.top4top.io/p_37637gtj00.jpg", note: "Every little thing you do is magic. ✨", type: "polaroid" },
+    { src: "https://g.top4top.io/p_3763ysdtu1.jpg", note: "Captured memories, eternal feelings. 🎞️", type: "photobooth" },
+    { src: "https://h.top4top.io/p_3763izoge2.jpg", note: "You are my favorite notification. 📱", type: "polaroid" },
+    { src: "https://i.top4top.io/p_37633hd9x3.jpg", note: "Life is better when we're laughing. 😂", type: "photobooth" },
+    { src: "https://j.top4top.io/p_3763vc4p44.jpg", note: "To more sunsets and stories together. 🌅", type: "polaroid" },
+    { src: "https://k.top4top.io/p_3763uf4tx5.jpg", note: "My sun, my moon, and all my stars. 🌌", type: "photobooth" },
+    { src: "https://l.top4top.io/p_3763xz4sz6.jpg", note: "Small moments, big love. 💖", type: "polaroid" },
+    { src: "https://a.top4top.io/p_37631j1oy7.jpg", note: "Thank you for being you. 🌹", type: "photobooth" },
+    { src: "https://c.top4top.io/p_376395tyk9.jpg", note: "Our journey is my favorite story. 📖", type: "polaroid" }
+];
+
+        function initCollage() {
+            const container = document.getElementById('collage');
+            container.innerHTML = '';
+            gallery.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = `item ${item.type}`;
+                const x = 10 + (Math.random() * 60);
+                const y = 5 + (Math.random() * 70);
+                const r = (Math.random() - 0.5) * 20;
+                div.style.left = `${x}%`; div.style.top = `${y}%`;
+                div.style.transform = `rotate(${r}deg) scale(0.8)`;
+                div.style.zIndex = i;
+                
+                if(item.type === 'polaroid') {
+                    div.innerHTML = `<img src="${item.src}"><div class="note">${item.note}</div>`;
+                } else {
+                    div.innerHTML = `<img src="${item.src}"><img src="${item.src}"><img src="${item.src}">`;
+                }
+
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    if(div.classList.contains('focused')) {
+                        div.classList.remove('focused');
+                        document.getElementById('dimmer').classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.item').forEach(el => el.classList.remove('focused'));
+                        div.classList.add('focused');
+                        document.getElementById('dimmer').classList.add('active');
+                    }
+                };
+                container.appendChild(div);
+                setTimeout(() => div.style.opacity = '1', i * 100);
+            });
+        }
+
+        document.getElementById('dimmer').onclick = () => {
+            document.querySelectorAll('.item').forEach(el => el.classList.remove('focused'));
+            document.getElementById('dimmer').classList.remove('active');
+        };
+
+        let currentScene = 0;
+        const scenes = document.querySelectorAll('.scene');
+        document.body.onclick = (e) => {
+            if(e.target.closest('#loading-screen') || e.target.closest('.item') || e.target.closest('.spotify-mini')) return;
+            scenes[currentScene].classList.remove('active');
+            currentScene = (currentScene + 1) % scenes.length;
+            scenes[currentScene].classList.add('active');
+            if(currentScene === 1) initCollage();
+        };
+    </script>
+</body>
+</html>
