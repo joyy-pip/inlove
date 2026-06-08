@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>150.172.128 - Cyber Speedtest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CONFIG TEMA INTEGRASI TEMPLATE --- */
+        :root {
+            --bg-main: #060609;
+            --bg-card: #0c0c14;
+            --bg-sidebar: #09090e;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --race-red: #ff2a4b;
+            --race-yellow: #ffb700;
+            --text-neon: #00ffaa; 
+            --text-muted: #78788a;
+            --transition-speed: 0.25s;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Courier New', Courier, monospace; 
+        }
+        
+        body { 
+            background-color: var(--bg-main); 
+            color: #d8d8e0; 
+            padding-top: 95px; 
+            overflow-x: hidden; 
+        }
+        
+        /* --- NAVBAR & SIDEBAR TEMPLATE --- */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px; background: #060609; border-bottom: 2px solid var(--race-red); 
+            display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 1000;
+        }
+        .navbar-brand { color: var(--race-yellow); font-size: 1.25rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .sys-status { font-size: 0.75rem; font-weight: bold; color: var(--text-neon); display: flex; align-items: center; gap: 6px; margin-right: 20px;}
+        .sys-status::before { content: ''; width: 7px; height: 7px; background: var(--text-neon); border-radius: 50%; box-shadow: 0 0 8px var(--text-neon); }
+        
+        .hamburger { width: 24px; height: 16px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; z-index: 1001; }
+        .hamburger span { display: block; height: 2px; width: 100%; background-color: var(--race-yellow); transition: all var(--transition-speed); }
+        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); background-color: var(--race-red); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background-color: var(--race-red); }
+
+        .sidebar {
+            position: fixed; top: 0; left: -320px; width: 320px; height: 100%; background: var(--bg-sidebar); border-right: 2px solid var(--race-red);
+            padding: 100px 20px 20px 20px; transition: left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1); z-index: 999;
+        }
+        .sidebar.active { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 10px; }
+        .sidebar-menu a { 
+            color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: bold;
+            display: block; padding: 12px 15px; border-radius: 4px; border: 1px solid transparent;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active { color: #fff; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 183, 0, 0.25); border-left: 4px solid var(--race-yellow); }
+
+        /* --- CONTENT WRAPPER --- */
+        .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px 20px; }
+        
+        header { 
+            background: rgba(12, 12, 20, 0.6); 
+            border: 1px solid var(--race-yellow); 
+            padding: 20px 25px; 
+            border-radius: 6px; 
+            margin-bottom: 30px; 
+        }
+        header h1 { color: var(--race-yellow); font-size: 1.35rem; font-weight: bold; text-transform: uppercase;}
+        header p { color: var(--text-muted); font-size: 0.75rem; }
+
+        /* HEADER NAVIGASI INTERNAL (DARI KODE ASLI ANDA) */
+        .page-back-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--race-yellow);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform var(--transition-speed);
+        }
+        .back-btn:hover { transform: translateX(-3px); }
+
+        /* STRUKTUR CARD & FORM */
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 25px; margin-bottom: 20px; }
+        
+        .lux-header-card {
+            background: rgba(255, 183, 0, 0.03);
+            border-left: 3px solid var(--race-yellow);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        .lux-head-custom-flex { display: flex; align-items: center; justify-content: space-between; }
+        .lux-left-info { display: flex; align-items: center; gap: 15px; }
+        .lux-icon-box { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+        .lux-head-text h2 { font-size: 1.05rem; color: #fff; text-transform: uppercase; margin-bottom: 2px; }
+        .lux-head-text p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .yoshi-btn { 
+            width: 100%; 
+            padding: 14px; 
+            background: transparent; 
+            border: 1px solid var(--race-yellow); 
+            color: var(--race-yellow); 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            border-radius: 4px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all var(--transition-speed);
+        }
+        .yoshi-btn:hover { background: rgba(255, 183, 0, 0.05); box-shadow: 0 0 10px rgba(255, 183, 0, 0.1); }
+        .yoshi-btn:disabled { border-color: var(--border-color); color: var(--text-muted); cursor: not-allowed; background: none; }
+
+        /* KOTAK CONTAINER HASIL LOG */
+        .log-container {
+            margin-top: 20px; 
+            background: #060609; 
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            border-radius: 6px; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-size: 15px; 
+        }
+        .result-title {
+            font-family: 'Orbitron', sans-serif; 
+            font-weight: bold; 
+            color: var(--text-neon); 
+            margin-bottom: 12px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 8px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        /* --- NOTIFICATION TOAST --- */
+        .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #0c0c14; border: 1px solid var(--race-yellow); padding: 12px 24px; color: #fff; z-index: 2000; transition: opacity 0.3s, visibility 0.3s; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; border-radius: 4px; visibility: hidden; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-brand">Server Telnet Fatxeon</div>
+            <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebarMenu">
+        <ul class="sidebar-menu">
+               <li><a href="index.html" class="active">// tessss</a></li>
+            <li><a href="telnet.html">// TELNET SERVER</a></li>
+        </ul>
+    </aside>
+
+    <div class="wrapper">
+        <header>
+            <h1>Cyber Speedtest Network</h1>
+            <p>[Modul analisis throughput dan latensi transmisi paket data]</p>
+        </header>
+
+        <div id="speedpage" class="page-container">
+            
+            <div class="glass-card">
+                <div class="lux-header-card mini-card">
+                    <div class="lux-head-custom-flex">
+                        <div class="lux-left-info">
+                            <div class="lux-icon-box"><i class="fas fa-tachometer-alt" style="color: var(--race-yellow);"></i></div>
+                            <div class="lux-head-text">
+                                <h2>Network Speed</h2>
+                                <p>Uji kecepatan internet Anda sekarang</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="yoshi-btn" id="btnSpeed" onclick="mulaiSpeedtest()">
+                    <i class="fas fa-play"></i> JALANKAN SPEEDTEST
+                </button>
+            </div>
+            
+            <div class="log-container" id="speedResultBox" style="display:none;">
+                <div class="result-title">SPEEDTEST RESULT:</div>
+                <div id="speedResultContent" style="white-space:pre-wrap; line-height:1.6; color:#fff;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><i class="fa-solid fa-info-circle"></i><span id="toast-msg">Notification</span></div>
+
+    <script>
+        // Fungsi Mekanisme Sidebar & Hamburger Kontrol
+        function toggleSidebar() {
+            document.getElementById('hamburgerBtn').classList.toggle('active');
+            document.getElementById('sidebarMenu').classList.toggle('active');
+        }
+
+        // Penyesuaian Fungsi showPopup bawaan script Anda ke Toast bawaan template
+        function showPopup(title, message, icon) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            
+            toastMsg.innerHTML = `${icon} <strong>${title}</strong>: ${message}`;
+            toast.style.visibility = 'visible';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.visibility = 'hidden';
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Fungsi Global Navigator placeholder agar aman dari uncaught error
+        function switchPage(page) {
+            console.log(`[Navigation] Redirecting back to: ${page}`);
+        }
+        function addToHistory(type, desc) {
+            console.log(`[Log Saved] ${type} -> ${desc}`);
+        }
+
+        // --- CORE SPEEDTEST FUNCTION (FUNGSI ASLI ANDA) ---
+        async function mulaiSpeedtest() {
+            const btn = document.getElementById('btnSpeed');
+            const resBox = document.getElementById('speedResultBox');
+            const resContent = document.getElementById('speedResultContent');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> TESTING...';
+            resBox.style.display = 'none';
+
+            try {
+                const response = await fetch('https://api.ryzendesu.vip/api/tools/speedtest');
+                const data = await response.json();
+
+                if (data.download) {
+                    let res = `• Download Speed : ${data.download}\n`;
+                    res += `• Upload Speed   : ${data.upload}\n`;
+                    res += `• Ping           : ${data.ping}\n`;
+                    res += `• Jitter         : ${data.jitter}\n`;
+                    res += `• ISP            : ${data.isp || '-'}\n`;
+                    res += `• Interface      : ${data.externalIp || '-'}`;
+
+                    resContent.innerText = res;
+                    resBox.style.display = 'block';
+                    showPopup('Success', 'Speedtest Selesai!', '✅');
+                    addToHistory('Speedtest', `Ping: ${data.ping} | DL: ${data.download}`);
+                } else {
+                    showPopup('Gagal', 'Gagal memperoleh data speedtest', '❌');
+                }
+            } catch (err) {
+                console.error(err);
+                showPopup('Error', 'Koneksi Server Gagal', '⚠️');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play"></i> JALANKAN SPEEDTEST';
+            }
+        }
+    </script>
+</body>
+</html>
