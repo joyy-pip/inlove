@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Telnet Fatxeon - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        /* --- HIGH TECH RACING THEME SYSTEM --- */
+        :root {
+            --bg-main: #060609;
+            --bg-card: #0c0c14;
+            --bg-sidebar: #09090e;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --race-red: #ff2a4b;
+            --race-yellow: #ffb700;
+            --text-neon: #00ffaa; 
+            --text-muted: #78788a;
+            --transition-speed: 0.25s;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+        body { background-color: var(--bg-main); color: #d8d8e0; padding-top: 95px; overflow-x: hidden; }
+        
+        /* --- NAVIGATION & SIDEBAR --- */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background: #060609; border-bottom: 2px solid var(--race-red); 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 25px; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .navbar-brand { color: var(--race-yellow); font-size: 1.25rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .sys-status { font-size: 0.75rem; font-weight: bold; color: var(--text-neon); display: flex; align-items: center; gap: 6px; }
+        .sys-status::before { content: ''; width: 7px; height: 7px; background: var(--text-neon); border-radius: 50%; box-shadow: 0 0 8px var(--text-neon); }
+        
+        .hamburger { width: 24px; height: 16px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; z-index: 1001; }
+        .hamburger span { display: block; height: 2px; width: 100%; background-color: var(--race-yellow); transition: all var(--transition-speed); }
+        .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); background-color: var(--race-red); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); background-color: var(--race-red); }
+
+        .sidebar {
+            position: fixed; top: 0; left: -320px; width: 320px; height: 100%;
+            background: var(--bg-sidebar); border-right: 2px solid var(--race-red);
+            padding: 100px 20px 20px 20px; transition: left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1); z-index: 999;
+        }
+        .sidebar.active { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 10px; }
+        .sidebar-menu a { 
+            color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: bold;
+            display: block; padding: 12px 15px; border-radius: 4px; transition: all 0.2s ease; cursor: pointer; 
+            border: 1px solid transparent;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active { 
+            color: #fff; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 183, 0, 0.25); border-left: 4px solid var(--race-yellow);
+        }
+
+        /* --- LAYOUT WRAPPER & INTERFACE --- */
+        .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px 20px; }
+        header { background: rgba(12, 12, 20, 0.6); border: 1px solid var(--race-yellow); padding: 20px 25px; border-radius: 6px; margin-bottom: 30px; }
+        header h1 { color: var(--race-yellow); font-size: 1.35rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;}
+        header p { color: var(--text-muted); font-size: 0.75rem; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Tambahan style dasar panel dashboard */
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 25px; margin-bottom: 20px; }
+        .action-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--race-yellow); color: var(--race-yellow); font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; }
+        .action-btn:hover { background: rgba(255, 183, 0, 0.05); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-brand">Server Telnet Fatxeon</div>
+        <div style="display: flex; align-items: center;">
+            <div class="sys-status">Server : ACTIVE</div>
+            <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar" id="sidebarMenu">
+        <ul class="sidebar-menu">
+            <li><a onclick="switchView('dashboard')" id="menu-dashboard" class="active"><i class="fa-solid antiquewhite"></i> DASHBOARD UTAMA</a></li>
+            <li><a onclick="switchView('fitur')" id="menu-fitur"><i class="fa-solid fa-gear"></i> FITUR LAINNYA</a></li>
+            <li><a href="archive.html" style="color: var(--race-yellow); border: 1px dashed var(--race-yellow);"><i class="fa-solid fa-folder-open"></i> BUKA ARCHIVE 04.04 ➔</a></li>
+        </ul>
+    </aside>
+
+    <div class="wrapper">
+        <header>
+            <h1 id="viewTitle">Dashboard Utama</h1>
+            <p id="viewSubtitle">[Sistem Konsol Intelijen - Navigasi Pusat]</p>
+        </header>
+
+        <section id="view-dashboard" class="view-section active">
+            <div class="glass-card">
+                <h3>Selamat Datang di Panel Utama</h3>
+                <p style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
+                    Gunakan menu sidebar di pojok kanan atas untuk berpindah fitur internal, atau klik tombol di bawah untuk membuka aplikasi Archive.
+                </p>
+                <button class="action-btn" style="margin-top: 20px;" onclick="window.location.href='archive.html'">Buka Fitur Archive 04.04</button>
+            </div>
+        </section>
+
+        <section id="view-fitur" class="view-section">
+            <div class="glass-card">
+                <h3>Fitur Tools Tambahan</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">Tempat meletakkan script generator atau downloader Anda lainnya di sini.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`menu-${viewName}`).classList.add('active');
+
+            const titleElement = document.getElementById('viewTitle');
+            const subElement = document.getElementById('viewSubtitle');
+            
+            if(viewName === 'dashboard') {
+                titleElement.innerText = "Dashboard Utama";
+                subElement.innerText = "[Sistem Konsol Intelijen - Navigasi Pusat]";
+            } else if (viewName === 'fitur') {
+                titleElement.innerText = "Fitur System";
+                subElement.innerText = "[Modul Utilitas Tambahan Terintegrasi]";
+            }
+            toggleSidebar(false);
+        }
+
+        function toggleSidebar(forceState = null) {
+            const hamburger = document.getElementById('hamburgerBtn');
+            const sidebar = document.getElementById('sidebarMenu');
+            if (forceState !== null) {
+                if (forceState) { hamburger.classList.add('active'); sidebar.classList.add('active'); }
+                else { hamburger.classList.remove('active'); sidebar.classList.remove('active'); }
+            } else {
+                hamburger.classList.toggle('active');
+                sidebar.classList.toggle('active');
+            }
+        }
+    </script>
+</body>
+</html>
