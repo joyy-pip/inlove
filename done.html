@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Fitur Premium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f9; }
+        .login-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #24292e; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #444; }
+        .error { color: red; font-size: 14px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>Akses Fitur Khusus</h2>
+    <p>Masukkan password untuk melanjutkan</p>
+    <input type="password" id="passwordInput" placeholder="Masukkan Password">
+    <button onclick="prosesLogin()">Masuk</button>
+    <p class="error" id="errorMessage">Password salah atau akses ditolak!</p>
+</div>
+
+<script>
+    async function prosesLogin() {
+        const inputPassword = document.getElementById("passwordInput").value;
+        const errorLabel = document.getElementById("errorMessage");
+        errorLabel.style.display = "none";
+
+        // 1. DETAIL REPOSITORY
+        const owner = "joyy-pip";
+        const repo = "Fatxeonofficial";
+        const path = "dashboard.html"; 
+
+        // 2. TOKEN GITHUB YANG SUDAH DI-ENKRIPSI (Spasi di awal sudah dihapus agar rapat)
+        const encryptedToken = "U2FsdGVkX19IqKBZYoOkXRT06vgiZFsfAoHEeOHdHIMzK2RCJtO5D2jNhaRwDOtq2SAEYgb4KncdfT0bmLjBJA=="; 
+
+        try {
+            // 3. Proses Dekripsi Token menggunakan password dari user
+            const bytes = CryptoJS.AES.decrypt(encryptedToken, inputPassword);
+            const decryptedToken = bytes.toString(CryptoJS.enc.Utf8);
+
+            // Jika password salah, hasil dekripsi akan kosong
+            if (!decryptedToken) {
+                errorLabel.style.display = "block";
+                return;
+            }
+
+            // 4. Ambil data dari GitHub untuk memastikan token & password benar
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                headers: {
+                    "Authorization": `token ${decryptedToken}`,
+                    "Accept": "application/vnd.github.v3.raw"
+                }
+            });
+
+            if (response.status === 200) {
+                // JIKA SUKSES: Langsung alihkan halaman ke dashboard.html
+                window.location.href = "dashboard.html";
+            } else {
+                errorLabel.style.display = "block";
+            }
+
+        } catch (error) {
+            errorLabel.style.display = "block";
+        }
+    }
+</script>
+
+</body>
+</html>
